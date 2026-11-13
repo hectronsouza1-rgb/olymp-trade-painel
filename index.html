@@ -1,42 +1,240 @@
-
-OLYMP TRADE — PAINEL M5
-SEM DADOS
-LEITURA TÉCNICA • EMA 8 / 21 / 50 • ADX 14 • RSI 7 • ATR 10
-SEM DADOS DE MERCADO. Importe um CSV de candles OHLC para calcular os indicadores. Nenhuma cotação ou sinal será inventado.
-ATIVO
-NÃO INFORMADO
-TENDÊNCIA
-INDISPONÍVEL
-DIREÇÃO
-SEM LEITURA
-FORÇA
-INDISPONÍVEL
-ADX 14
-—
-+DI / -DI
-—
-RSI RÁPIDO 7
-—
-DISTÂNCIA EMA 8
-—
-EMA 8 / 21 / 50
-—
-ANÁLISE COMPRA
-—
-ANÁLISE VENDA
-—
-SINAL OPERACIONAL
-AGUARDAR
-TEMPO DA VELA
-INDISPONÍVEL
-LEITURA DA VELA
-SEM CONFIRMAÇÃO
-
-CARREGAR DADOS DO GRÁFICO
-Selecionar CSV ANALISAR
-Confirmo que a última linha do arquivo é uma vela M5 totalmente fechada. Sem esta confirmação, nenhum sinal operacional será liberado.
-CSV esperado: colunas time (opcional), open, high, low, close. Aceita cabeçalho e separador por vírgula ou ponto e vírgula. Use pelo menos 60 candles; idealmente 200 ou mais.
-CRITÉRIOS E BLOQUEIOS
-Aguardando dados válidos.
-A pontuação é a quantidade de critérios atendidos em 10. Não é probabilidade de acerto. O sinal exige alinhamento da tendência, ADX mínimo de 20, vela fechada e ausência de movimento excessivamente esticado.
-Ferramenta independente de análise visual. Não é afiliada à Olymp Trade e não executa operações. Dados e sinais dependem do arquivo importado.
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#202633">
+<title>Olymp Trade — Painel M5</title>
+<style>
+:root{--bg:#111722;--panel:#202633;--left:#343b4b;--muted:#818795;--green:#25a94b;--red:#ed3345;--blue:#2864ed;--text:#f5f7fb;--line:#e8eaf0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;padding:14px}
+.app{max-width:760px;margin:0 auto}
+header{background:var(--panel);border:1px solid #343b49;border-radius:12px 12px 0 0;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:20px;margin:0;font-weight:800;letter-spacing:.3px}
+.pill{font-size:11px;font-weight:bold;padding:7px 10px;border-radius:20px;background:#505766;color:#fff}
+.sub{font-size:12px;color:#c3c8d2;margin-top:9px}
+.status{padding:10px 12px;background:#353c4b;color:#ffe6a6;font-size:13px;line-height:1.4;border-top:1px solid #4a5261}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+td{border:2px solid var(--line);padding:12px 8px;text-align:center;vertical-align:middle;overflow-wrap:anywhere}
+td:first-child{background:var(--left);width:52%;font-size:clamp(12px,3.5vw,17px);font-weight:700;letter-spacing:.15px}
+td:last-child{background:var(--muted);font-size:clamp(14px,4vw,19px);font-weight:700}
+.v-green{background:var(--green)!important;color:white}
+.v-red{background:var(--red)!important;color:white}
+.v-blue{background:var(--blue)!important;color:white}
+.v-gray{background:#777d89!important;color:white}
+.v-dark{background:#505766!important;color:white}
+.section{background:var(--panel);padding:14px;border:1px solid #394151;border-top:0}
+.section h2{font-size:15px;margin:0 0 10px}
+.small{font-size:12px;color:#c4cad5;line-height:1.5}
+.controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+button,.file-label{background:#2864ed;color:white;border:0;border-radius:8px;padding:11px 14px;font-weight:bold;font-size:13px;cursor:pointer}
+button.secondary{background:#4a5261}
+input[type=file]{display:none}
+input[type=text]{background:#111722;color:white;border:1px solid #596274;border-radius:7px;padding:10px;min-width:0;flex:1}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#e2e6ed;margin-top:12px;line-height:1.4}
+.check input{margin-top:2px;accent-color:#25a94b}
+.reasons{margin:0;padding-left:19px;font-size:12px;line-height:1.65;color:#e1e5ed}
+footer{padding:13px;text-align:center;background:#202633;color:#b9c0cc;font-size:11px;border-radius:0 0 12px 12px}
+.hidden{display:none!important}
+@media(min-width:600px){td{padding:14px 12px}header{padding:20px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+ <div class="top"><h1>OLYMP TRADE — PAINEL M5</h1><span class="pill" id="connection">SEM DADOS</span></div>
+ <div class="sub">LEITURA TÉCNICA • EMA 8 / 21 / 50 • ADX 14 • RSI 7 • ATR 10</div>
+</header>
+<div class="status" id="notice" role="status">SEM DADOS DE MERCADO. Importe um CSV de candles OHLC para calcular os indicadores. Nenhuma cotação ou sinal será inventado.</div>
+<table aria-label="Painel de análise">
+<tbody>
+<tr><td>ATIVO</td><td id="asset" class="v-gray">NÃO INFORMADO</td></tr>
+<tr><td>TENDÊNCIA</td><td id="trend" class="v-gray">INDISPONÍVEL</td></tr>
+<tr><td>DIREÇÃO</td><td id="direction" class="v-gray">SEM LEITURA</td></tr>
+<tr><td>FORÇA</td><td id="strength" class="v-gray">INDISPONÍVEL</td></tr>
+<tr><td>ADX 14</td><td id="adx" class="v-gray">—</td></tr>
+<tr><td>+DI / -DI</td><td id="di" class="v-gray">—</td></tr>
+<tr><td>RSI RÁPIDO 7</td><td id="rsi" class="v-gray">—</td></tr>
+<tr><td>DISTÂNCIA EMA 8</td><td id="distance" class="v-gray">—</td></tr>
+<tr><td>EMA 8 / 21 / 50</td><td id="emas" class="v-gray">—</td></tr>
+<tr><td>ANÁLISE COMPRA</td><td id="buyScore" class="v-gray">—</td></tr>
+<tr><td>ANÁLISE VENDA</td><td id="sellScore" class="v-gray">—</td></tr>
+<tr><td>SINAL OPERACIONAL</td><td id="signal" class="v-gray">AGUARDAR</td></tr>
+<tr><td>TEMPO DA VELA</td><td id="candleTime" class="v-blue">INDISPONÍVEL</td></tr>
+<tr><td>LEITURA DA VELA</td><td id="candleRead" class="v-gray">SEM CONFIRMAÇÃO</td></tr>
+</tbody>
+</table>
+<section class="section">
+ <h2>CARREGAR DADOS DO GRÁFICO</h2>
+ <div class="controls">
+  <label class="file-label" for="csvFile">Selecionar CSV</label>
+  <input id="csvFile" type="file" accept=".csv,.txt,text/csv">
+  <input id="assetName" type="text" placeholder="Nome do ativo (ex.: EUR/USD)" aria-label="Nome do ativo">
+  <button id="analyzeBtn" type="button" class="secondary">ANALISAR</button>
+ </div>
+ <label class="check"><input type="checkbox" id="closedCandle"> <span>Confirmo que a última linha do arquivo é uma vela M5 totalmente fechada. Sem esta confirmação, nenhum sinal operacional será liberado.</span></label>
+ <p class="small" id="fileInfo">CSV esperado: colunas time (opcional), open, high, low, close. Aceita cabeçalho e separador por vírgula ou ponto e vírgula. Use pelo menos 60 candles; idealmente 200 ou mais.</p>
+</section>
+<section class="section">
+ <h2>CRITÉRIOS E BLOQUEIOS</h2>
+ <ul class="reasons" id="reasons"><li>Aguardando dados válidos.</li></ul>
+ <p class="small">A pontuação é a quantidade de critérios atendidos em 10. Não é probabilidade de acerto. O sinal exige alinhamento da tendência, ADX mínimo de 20, vela fechada e ausência de movimento excessivamente esticado.</p>
+</section>
+<footer>Ferramenta independente de análise visual. Não é afiliada à Olymp Trade e não executa operações. Dados e sinais dependem do arquivo importado.</footer>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+let candles = [];
+let lastResult = null;
+function setCell(id,text,cls="v-gray"){const el=$(id);el.textContent=text;el.className=cls;}
+function num(v){if(typeof v==="number")return v;return Number(String(v??"").trim().replace(/\s/g,"").replace(",", "."));}
+function parseCSV(text){
+ const lines=text.replace(/^\uFEFF/,"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ if(lines.length<3)throw Error("O arquivo está vazio ou tem poucas linhas.");
+ const sep=(lines[0].split(";").length>lines[0].split(",").length)?";":",";
+ const first=lines[0].split(sep).map(x=>x.trim().toLowerCase().replace(/^["']|["']$/g,""));
+ const hasHeader=first.some(x=>/[a-z]/i.test(x));
+ let idx={open:1,high:2,low:3,close:4,time:0};
+ if(hasHeader){
+   for(const k of ["open","high","low","close"]){
+    const i=first.findIndex(x=>x===k||x.includes(k));
+    if(i<0)throw Error("Não encontrei a coluna "+k+". Use cabeçalho open, high, low, close.");
+    idx[k]=i;
+   }
+   idx.time=first.findIndex(x=>x==="time"||x==="date"||x==="datetime"||x==="timestamp");
+ }
+ const start=hasHeader?1:0, out=[];
+ for(let i=start;i<lines.length;i++){
+  const c=lines[i].split(sep).map(x=>x.trim().replace(/^["']|["']$/g,""));
+  const o=num(c[idx.open]),h=num(c[idx.high]),l=num(c[idx.low]),cl=num(c[idx.close]);
+  if([o,h,l,cl].every(Number.isFinite)&&h>=Math.max(o,cl,l)&&l<=Math.min(o,cl,h)&&h>0&&l>0){
+   out.push({time:idx.time>=0?c[idx.time]:"",open:o,high:h,low:l,close:cl});
+  }
+ }
+ if(out.length<60)throw Error("Foram encontrados "+out.length+" candles válidos. São necessários pelo menos 60; recomendamos 200 ou mais.");
+ return out;
+}
+function ema(values,period){
+ const out=Array(values.length).fill(null), k=2/(period+1);
+ let seed=values.slice(0,period).reduce((a,b)=>a+b,0)/period;
+ out[period-1]=seed;
+ for(let i=period;i<values.length;i++)out[i]=values[i]*k+out[i-1]*(1-k);
+ return out;
+}
+function wilder(values,period){
+ const out=Array(values.length).fill(null);
+ if(values.length<=period)return out;
+ let s=values.slice(1,period+1).reduce((a,b)=>a+b,0)/period;
+ out[period]=s;
+ for(let i=period+1;i<values.length;i++){s=(s*(period-1)+values[i])/period;out[i]=s;}
+ return out;
+}
+function indicators(data){
+ const n=data.length, highs=data.map(x=>x.high), lows=data.map(x=>x.low), closes=data.map(x=>x.close);
+ const tr=Array(n).fill(0), plus=Array(n).fill(0), minus=Array(n).fill(0);
+ for(let i=1;i<n;i++){
+  const up=highs[i]-highs[i-1], down=lows[i-1]-lows[i];
+  plus[i]=(up>down&&up>0)?up:0; minus[i]=(down>up&&down>0)?down:0;
+  tr[i]=Math.max(highs[i]-lows[i],Math.abs(highs[i]-closes[i-1]),Math.abs(lows[i]-closes[i-1]));
+ }
+ const atr=wilder(tr,10), smTR=wilder(tr,14), smP=wilder(plus,14), smM=wilder(minus,14);
+ const pdi=Array(n).fill(null),mdi=Array(n).fill(null),dx=Array(n).fill(null);
+ for(let i=0;i<n;i++){
+  if(smTR[i]&&smTR[i]>0){pdi[i]=100*smP[i]/smTR[i];mdi[i]=100*smM[i]/smTR[i];}
+  if(pdi[i]!==null&&mdi[i]!==null&&(pdi[i]+mdi[i])>0)dx[i]=100*Math.abs(pdi[i]-mdi[i])/(pdi[i]+mdi[i]);
+ }
+ // ADX = Wilder smoothing of DX, starting at the first available DX.
+ const adx=Array(n).fill(null), first=dx.findIndex(x=>x!==null);
+ if(first>=0&&first+14<n){
+  let sum=0;for(let i=first;i<first+14;i++)sum+=dx[i]||0;
+  adx[first+13]=sum/14;
+  for(let i=first+14;i<n;i++)adx[i]=(adx[i-1]*13+(dx[i]||0))/14;
+ }
+ const gains=Array(n).fill(0),losses=Array(n).fill(0);
+ for(let i=1;i<n;i++){const d=closes[i]-closes[i-1];gains[i]=Math.max(0,d);losses[i]=Math.max(0,-d);}
+ const ag=wilder(gains,7),al=wilder(losses,7),rsi=Array(n).fill(null);
+ for(let i=0;i<n;i++)if(ag[i]!==null&&al[i]!==null)rsi[i]=al[i]===0?100:100-100/(1+ag[i]/al[i]);
+ return {e8:ema(closes,8),e21:ema(closes,21),e50:ema(closes,50),atr,adx,pdi,mdi,rsi};
+}
+function evaluate(data){
+ const ind=indicators(data), i=data.length-1, prev=i-3, c=data[i], p=data[i-1];
+ const v=k=>ind[k][i], prior=k=>ind[k][prev];
+ const ready=["e8","e21","e50","atr","adx","pdi","mdi","rsi"].every(k=>v(k)!==null&&Number.isFinite(v(k)));
+ if(!ready)throw Error("Ainda não há histórico suficiente para calcular todos os indicadores.");
+ const atr=v("atr"), adx=v("adx"), rsi=v("rsi"), pdi=v("pdi"), mdi=v("mdi");
+ const upStack=v("e8")>v("e21")&&v("e21")>v("e50"), downStack=v("e8")<v("e21")&&v("e21")<v("e50");
+ const upSlope=v("e8")>prior("e8")&&v("e21")>prior("e21")&&v("e50")>prior("e50");
+ const downSlope=v("e8")<prior("e8")&&v("e21")<prior("e21")&&v("e50")<prior("e50");
+ const bullish=c.close>c.open, bearish=c.close<c.open;
+ const body=Math.abs(c.close-c.open), range=c.high-c.low;
+ const candleStrong=atr>0&&body/atr>=0.15;
+ const continuationUp=data.slice(-3).filter(x=>x.close>x.open).length>=2&&c.close>p.close;
+ const continuationDown=data.slice(-3).filter(x=>x.close<x.open).length>=2&&c.close<p.close;
+ const dist=Math.abs(c.close-v("e8"))/atr;
+ const notExtended=dist<=1.5;
+ const volOK=atr>0&&range/atr<=2.5;
+ const buy=[
+  upStack,upSlope,c.close>v("e50"),v("e8")>v("e21"),adx>=20,pdi>mdi,rsi>50,bullish&&candleStrong,continuationUp,notExtended&&volOK
+ ];
+ const sell=[
+  downStack,downSlope,c.close<v("e50"),v("e8")<v("e21"),adx>=20,mdi>pdi,rsi<50,bearish&&candleStrong,continuationDown,notExtended&&volOK
+ ];
+ const bc=buy.filter(Boolean).length,sc=sell.filter(Boolean).length;
+ const aligned=upStack||downStack, directional=upStack? "ALTA":downStack?"BAIXA":"LATERAL";
+ const strength=adx>=25?"FORTE":adx>=20?"MODERADA":"FRACA/LATERAL";
+ let signal="AGUARDAR",why=[];
+ if(!aligned)why.push("Bloqueio: EMAs 8, 21 e 50 não estão alinhadas.");
+ if(adx<20)why.push("Bloqueio: ADX abaixo de 20; força insuficiente.");
+ if(!notExtended)why.push("Bloqueio: preço muito distante da EMA 8 (mais de 1,5 ATR).");
+ if(!volOK)why.push("Bloqueio: vela com amplitude excessiva (mais de 2,5 ATR).");
+ if(!candleStrong)why.push("Sem confirmação: corpo da vela inferior a 0,15 ATR.");
+ if(!continuationUp&&!continuationDown)why.push("Sem continuidade: os últimos candles não confirmam direção.");
+ if(bc>=8&&upStack&&upSlope&&adx>=20&&notExtended&&volOK&&bullish&&candleStrong&&continuationUp)signal="COMPRA";
+ else if(sc>=8&&downStack&&downSlope&&adx>=20&&notExtended&&volOK&&bearish&&candleStrong&&continuationDown)signal="VENDA";
+ else why.push("Sinal bloqueado: não atingiu todos os filtros obrigatórios e pelo menos 8/10 critérios.");
+ return {ind,i,c,atr,adx,rsi,pdi,mdi,dist,bc,sc,buy,sell,directional,strength,signal,why,upStack,downStack};
+}
+function render(r){
+ const {c,atr,adx,rsi,pdi,mdi,dist,bc,sc,directional,strength,signal,buy,sell}=r;
+ $("connection").textContent="CSV CARREGADO";$("connection").style.background="#198a3b";
+ $("notice").textContent="Dados calculados a partir do CSV importado. A leitura corresponde ao último candle do arquivo; não é uma transmissão ao vivo.";
+ setCell("asset",$("assetName").value.trim()||"ATIVO DO CSV","v-dark");
+ setCell("trend",directional,directional==="ALTA"?"v-green":directional==="BAIXA"?"v-red":"v-gray");
+ setCell("direction",directional==="ALTA"?"COMPRADORA":directional==="BAIXA"?"VENDEDORA":"NEUTRA",directional==="ALTA"?"v-green":directional==="BAIXA"?"v-red":"v-gray");
+ setCell("strength",strength,adx>=25?"v-green":adx>=20?"v-blue":"v-gray");
+ setCell("adx",adx.toFixed(1),adx>=25?"v-green":adx<20?"v-red":"v-blue");
+ setCell("di",pdi.toFixed(1)+" / "+mdi.toFixed(1),pdi>mdi?"v-green":mdi>pdi?"v-red":"v-gray");
+ setCell("rsi",rsi.toFixed(1),rsi>50?"v-green":rsi<50?"v-red":"v-gray");
+ setCell("distance",dist.toFixed(2)+" ATR",dist<=1.5?"v-green":"v-red");
+ setCell("emas",r.ind.e8[r.i].toFixed(5)+" / "+r.ind.e21[r.i].toFixed(5)+" / "+r.ind.e50[r.i].toFixed(5),"v-dark");
+ setCell("buyScore",Math.round(bc*10)+"% ("+bc+"/10)",bc>=8?"v-green":"v-gray");
+ setCell("sellScore",Math.round(sc*10)+"% ("+sc+"/10)",sc>=8?"v-red":"v-gray");
+ setCell("signal",signal,signal==="COMPRA"?"v-green":signal==="VENDA"?"v-red":"v-gray");
+ setCell("candleTime","INDISPONÍVEL","v-blue");
+ setCell("candleRead",c.close>c.open?"VELA DE ALTA":c.close<c.open?"VELA DE BAIXA":"DOJI",c.close>c.open?"v-green":c.close<c.open?"v-red":"v-gray");
+ const list=$("reasons");list.innerHTML="";
+ const passed=[];
+ (buy.some(Boolean)||sell.some(Boolean))&&passed.push("Pontuação calculada por 10 critérios independentes para cada direção.");
+ if(adx>=25)passed.push("ADX indica tendência forte.");else if(adx>=20)passed.push("ADX indica força intermediária.");else passed.push("ADX indica mercado fraco.");
+ if(r.signal!=="AGUARDAR")passed.push("Todos os bloqueios obrigatórios foram superados para "+signal+".");
+ r.why.forEach(x=>{const li=document.createElement("li");li.textContent=x;list.appendChild(li);});
+ passed.forEach(x=>{const li=document.createElement("li");li.textContent=x;list.appendChild(li);});
+ if(!list.children.length){const li=document.createElement("li");li.textContent="Análise concluída.";list.appendChild(li);}
+}
+$("csvFile").addEventListener("change",async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{const txt=await f.text();candles=parseCSV(txt);$("fileInfo").textContent=f.name+" — "+candles.length+" candles válidos carregados. Confirme se a última vela está fechada e toque em ANALISAR.";$("connection").textContent="ARQUIVO PRONTO";$("connection").style.background="#2864ed";}
+ catch(err){candles=[];$("fileInfo").textContent=err.message;$("connection").textContent="ERRO NO ARQUIVO";$("connection").style.background="#b42332";}
+});
+$("analyzeBtn").addEventListener("click",()=>{
+ if(!candles.length){$("fileInfo").textContent="Primeiro selecione um CSV válido.";return;}
+ if(!$("closedCandle").checked){setCell("signal","AGUARDAR","v-gray");$("notice").textContent="ANÁLISE BLOQUEADA: confirme que a última vela do CSV está totalmente fechada.";return;}
+ try{lastResult=evaluate(candles);render(lastResult);}
+ catch(err){$("fileInfo").textContent=err.message;}
+});
+</script>
+</body>
+</html>
